@@ -18,18 +18,9 @@
 #include<sys/mman.h>
 #include<fcntl.h>
 #include<time.h>
+#include "../commons/packet.c"
 
 #define BUFF_SIZE 64
-
-struct packet{
-
-    // typical packet structure
-
-    int ser_acc;             // saves the account number of user
-    int ser_encrypt;         // saves the encryption key of the client
-    char ser_usr_name[20];   // saves the user name of the user
-
-};
 
 int main( int argc, char * arg[] )
 {
@@ -71,18 +62,16 @@ int main( int argc, char * arg[] )
 
     b = ( char * )attrib;
 
-    while(1){
+    while( *b != '*' ){
 
-         while( *b == '*' ){
-
-              usleep(1);
-
-         }
-
-         printf("%c\n", *b);
-
-         *b = '*';
+         usleep(1);
 
     }
+
+    attrib = ( void * )( ++( char * )attrib );
+    client_id = *( char * )attrib;
+
+    attrib = ( void * )( ++( char * )attrib );
+    client_encrypt = *( int * )attrib;
 
 }
