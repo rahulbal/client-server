@@ -6,7 +6,7 @@
  * the network.
  *
  * Return values:
- * Returns 1 on successful creation, and 0 on failure
+ * Returns packet * on success and NULL on failure
  *
  * Author : Rahul Balakrishnan
  *
@@ -17,23 +17,71 @@
 #include<sys/mman.h>
 #include<sys/stat.h>
 #include<fcntl.h>
-#include "../commons/packet"
+#include<stdio.h>
+#include<unistd.h>
+#include<string.h>
+#include<stdlib.h>
+#include "../commons/packet.c"
+#include "../commons/global_packet.c"
 
-int s( void * attrib )
+extern void itoa( int, char * );
+
+packet * session( int * client_id, int * client_encrypt, int * server_encrypt, global_packet * attrib )
 {
 
-    b = ( char * )attrib;
+    int len;
+    
+    int fs;   // shared memory index
+    
+    packet * buff;
+    
+    itoa ( *client_id, attrib->memory_add );
+    
+    len = strlen( attrib->memory_add );
+    
+    while( attrib->client_mutex != '&' ){
+    
+         usleep(5);
+         
+    }
+    
+    attrib->client_mutex = '*';
+    
+    attrib->memory_add[len] = rand() % 10;
+    ++len;
+    attrib->memory_add[len] = rand() % 10;
+    ++len;
+    
+    attrib->memory_add[len] = '\0';
+    
+    fs = shm_open( attrib->memory_add, O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
-    while( *b != '*' ){
+    if( -1 == fs ){
 
-         usleep(1);
+         fprintf( stderr, "ERROR!! Error creating memory" );
+         return NULL;
 
     }
 
-    attrib = ( void * )( ++( char * )attrib );
-    client_id = *( char * )attrib;
+    if( ftruncate( fs, sizeof( packet ) ) == -1 ){
 
-    attrib = ( void * )( ++( char * )attrib );
-    client_encrypt = *( int * )attrib;
+         fprintf( stderr, "ERROR!! Memory could not be allocated" );
+         return NULL;
+
+    }
+
+    buff = ( packet * )mmap( NULL, sizeof( packet ), PROT_READ| PROT_WRITE, MAP_SHARED, fs, 0 );
+
+    if( buff ==  MAP_FAILED ){
+
+         fprintf( stderr, "ERROR!! Could not  map buffer to physical memory" );
+         return NULL;
+
+    }
+    
+    attrib->encrypt = *server_encrypt;
+    attrib->req_read_data = '&';
+    
+    return buff; 
 
 }

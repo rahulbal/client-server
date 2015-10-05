@@ -1,5 +1,5 @@
 /***************************************
- * File Name : common.c
+ * File Name : packet.c
  *
  * ver 0.1
  *
@@ -13,12 +13,18 @@
  *
  *************************************/
 
-struct packet{
+#ifndef PACKET
+#define PACKET
+
+typedef struct Packet{
 
     // typical packet structure
-
+    char client_mutex;
+    char req_read_data;
+    char pkt_id;
     int acc;
-    int encrypt;
-    char usr_name;
+    int amount;
 
-};
+}packet;
+
+#endif
